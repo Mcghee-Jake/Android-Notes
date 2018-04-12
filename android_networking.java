@@ -111,7 +111,7 @@ public class yourActivity.xml {
 }
 
 
-public class Activity {
+public class Activity extends AppCompatActivity {
 	
 	// 1A. Create resources
 	private EditText mEditText;
@@ -160,6 +160,8 @@ public class Activity {
 		
 }
 
+
+// To add in a progress wheel and an error message
 
 public class yourActivity.xml {
 <LinearLayout
@@ -221,8 +223,9 @@ public class yourActivity.xml {
 <LinearLayout/>
 }
 
+// Progress wheel and error message continued
 
-public class Activity {
+public class Activity extends AppCompatActivity {
 	
 	private EditText mEditText;
 	private TextView mTextView;
@@ -290,6 +293,171 @@ public class Activity {
 				showData();
 				mTextView.setText(results);
 			} else { // 5. call showErrorMessage if not
+				showErrorMessage();
+			}
+		}
+		
+	}
+		
+}
+
+// Switch AsyncTask to AsyncTaskLoader
+
+// 1. Implement LoaderManager.LoaderCallbacks<String> on your activity
+public class Activity extends AppCompatActivity implements
+        LoaderManager.LoaderCallbacks<String> {
+	
+	private EditText mEditText;
+	private TextView mTextView;
+	private TextView mErrorMessageDisplay;
+	private ProgressBar mLoadingIndicator;
+	
+	// 2. Create a constant int to uniquely identify your loader.
+    /*
+     * This number will uniquely identify our Loader and is chosen arbitrarily. You can change this
+     * to any number you like, as long as you use the same variable name.
+     */
+    private static final int MY_LOADER = 77;
+	
+	private class onCreate() {
+		
+		mEditText = (EditText) findViewById(R.id.editText);
+		mTextView = (TextView) findViewById(R.id.textView);
+		mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
+		mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+		
+		String query = mEditText.getText().toString();
+		URL url = NetworkUtils.builtUrl(query);
+		
+		new NetworkingTask().execute(url);
+	}
+	
+	
+	private void showData() {
+		mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+		mTextView.setVisibility(View.VISIBLE);
+	}
+	
+	private void showErrorMessage() {
+		mTextView.setVisibility(View.INVISIBLE);
+		mErrorMessageDisplay.setVisibility(View.VISIBLE);
+	}
+	
+	
+	// 3. Override onCreateLoader
+	@Override
+    public Loader<String> onCreateLoader(int id, final Bundle args) {
+        // 4. Return a new AsyncTaskLoader<String> as an anonymous inner class with this as the constructor's parameter
+        return new AsyncTaskLoader<String>(this) {
+
+            // 5. Override onStartLoading
+            @Override
+            protected void onStartLoading() {
+
+                // 6. If args is null, return.
+                /* If no arguments were passed, we don't have a query to perform. Simply return. */
+                if (args == null) {
+                    return;
+                }
+
+                // 7. Show the loading indicator
+                /*
+                 * When we initially begin loading in the background, we want to display the
+                 * loading indicator to the user
+                 */
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+
+                // 8. Force a load
+                forceLoad();
+            }
+
+            // 9. Override loadInBackground
+            @Override
+            public String loadInBackground() {
+
+                // 10. Get the String for our URL from the bundle passed to onCreateLoader
+                /* Extract the search query from the args using our constant */
+                String searchQueryUrlString = args.getString(SEARCH_QUERY_URL_EXTRA);
+
+                // 11. If the URL is null or empty, return null
+                /* If the user didn't enter anything, there's nothing to search for */
+                if (searchQueryUrlString == null || TextUtils.isEmpty(searchQueryUrlString)) {
+                    return null;
+                }
+
+                // 12. Copy the try / catch block from the AsyncTask's doInBackground method
+                /* Parse the URL from the passed in String and perform the search */
+                try {
+                    URL githubUrl = new URL(searchQueryUrlString);
+                    String githubSearchResults = NetworkUtils.getResponseFromHttpUrl(githubUrl);
+                    return githubSearchResults;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        };
+    }
+
+    // 13. Override onLoadFinished
+    @Override
+    public void onLoadFinished(Loader<String> loader, String data) {
+
+        // 14. Hide the loading indicator
+        /* When we finish loading, we want to hide the loading indicator from the user. */
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+
+        // COMPLETED (15) Use the same logic used in onPostExecute to show the data or the error message
+        /*
+         * If the results are null, we assume an error has occurred. There are much more robust
+         * methods for checking errors, but we wanted to keep this particular example simple.
+         */
+        if (null == data) {
+            showErrorMessage();
+        } else {
+            mSearchResultsTextView.setText(data);
+            showJsonDataView();
+        }
+    }
+
+    // COMPLETED (16) Override onLoaderReset as it is part of the interface we implement, but don't do anything in this method
+    @Override
+    public void onLoaderReset(Loader<String> loader) {
+        /*
+         * We aren't using this method in our example application, but we are required to Override
+         * it to implement the LoaderCallbacks<String> interface
+         */
+    }
+	
+	public class NetworkingTask extends AsyncTask<URL, Void, String> {
+		
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mLoadingIndicator.setVisibility.View.VISIBLE);
+		}
+	
+		@Overide
+		protected String doInBackground(URL... params) {
+			URL url = params[0];
+			String results = null;
+			try {
+				results = NetworkUtils.getResponseFromHttpUrl(url);
+			} catch (IOException e) {
+				e.printStackTrace;
+			}
+			return results;
+		}
+		
+		
+		@Override
+		protected void onPostExecute(String results) {
+			
+			mLoadingIndicator.setVisibility(View.INVISIBLE);
+			
+			if (results != null && !results .equals("")) {
+				showData();
+				mTextView.setText(results);
+			} else {
 				showErrorMessage();
 			}
 		}
