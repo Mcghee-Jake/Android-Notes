@@ -16,7 +16,7 @@ public class NetworkUtils {
 	final static String BASE_URL = "https://www.example.com/";
 	final static String PARAM_QUERY = "q";
 	
-	// in this example, the URL will = "https://www.example.com/q=query"
+	// In this example, the URL will = "https://www.example.com/q=query"
 
 	 /**
      * Builds the URL
@@ -121,21 +121,23 @@ public class Activity extends AppCompatActivity {
 		// 1B. Ge references to resources
 		mEditText = (EditText) findViewById(R.id.editText);
 		mTextView = (TextView) findViewById(R.id.textView);
-		
-		// 2. Build the URL using NetworkUtils
+	}
+	
+	private void makeQuery() {
+		// 4. Build the URL using NetworkUtils
 		String query = mEditText.getText().toString();
-		URL url = NetworkUtils.builtUrl(query);
+		URL url = NetworkUtils.buildUrl(query);
 		
-		// 6. Execute the AsyncTask subclass
+		// 8. Execute the AsyncTask subclass
 		new NetworkingTask().execute(url);
 	}
 	
 	
 	
-	// 3. Create a subclass of AsyncTask to move networking off the main thread
+	// 5. Create a subclass of AsyncTask to move networking off the main thread
 	public class NetworkingTask extends AsyncTask<URL, Void, String> {
 		
-		// 4. Override doInBackground
+		// 6. Override doInBackground
 		@Overide
 		protected String doInBackground(URL... params) {
 			URL url = params[0];
@@ -148,7 +150,7 @@ public class Activity extends AppCompatActivity {
 			return results;
 		}
 		
-		// 5. Override onPostExecute
+		// 7. Override onPostExecute
 		@Override
 		protected void onPostExecute(String results) {
 			if (results != null && !results .equals("")) {
@@ -157,6 +159,24 @@ public class Activity extends AppCompatActivity {
 		}
 		
 	}
+	
+	// 2. Create options menu
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+	// 3. Call makeQuery() when options item is selected
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemThatWasClickedId = item.getItemId();
+        if (itemThatWasClickedId == R.id.action_search) {
+            makeQuery();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 		
 }
 
@@ -239,22 +259,27 @@ public class Activity extends AppCompatActivity {
 		// 1B. Get a reference to resources
 		mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
 		mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-		
+	}
+	
+	private void makeQuery() {
 		String query = mEditText.getText().toString();
-		URL url = NetworkUtils.builtUrl(query);
+		// 2 Exit if no search was entered
+		if (TextUtils.isEmpty(query)) {
+            return;
+        }
+		URL url = NetworkUtils.buildUrl(query);
 		
 		new NetworkingTask().execute(url);
 	}
 	
 	
-	
-	// 2. Create a method to show the data
+	// 3. Create a method to show the data
 	private void showData() {
 		mErrorMessageDisplay.setVisibility(View.INVISIBLE);
 		mTextView.setVisibility(View.VISIBLE);
 	}
 	
-	// 3. Create a method for error handling
+	// 4. Create a method for error handling
 	private void showErrorMessage() {
 		mTextView.setVisibility(View.INVISIBLE);
 		mErrorMessageDisplay.setVisibility(View.VISIBLE);
@@ -264,7 +289,7 @@ public class Activity extends AppCompatActivity {
 	public class NetworkingTask extends AsyncTask<URL, Void, String> {
 		
 		
-		// 6. override on PreExecute to set loading indicator to VISIBLE
+		// 7. override on PreExecute to set loading indicator to VISIBLE
 		protected void onPreExecute() {
 			super.onPreExecute();
 			mLoadingIndicator.setVisibility.View.VISIBLE);
@@ -285,49 +310,76 @@ public class Activity extends AppCompatActivity {
 		
 		@Override
 		protected void onPostExecute(String results) {
-			// 7. Hide the loading indicator after loading is complete
+			// 8. Hide the loading indicator after loading is complete
 			mLoadingIndicator.setVisibility(View.INVISIBLE);
 			
 			if (results != null && !results .equals("")) {
-				// 4. call showData() if data is retrieved
+				// 5. call showData() if data is retrieved
 				showData();
 				mTextView.setText(results);
-			} else { // 5. call showErrorMessage if not
+			} else { // 6. call showErrorMessage if not
 				showErrorMessage();
 			}
 		}
 		
 	}
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemThatWasClickedId = item.getItemId();
+        if (itemThatWasClickedId == R.id.action_search) {
+            makeQuery();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 		
 }
 
-// Switch AsyncTask to AsyncTaskLoader
+// To preserve data when screen is rotated
 
-// 1. Implement LoaderManager.LoaderCallbacks<String> on your activity
-public class Activity extends AppCompatActivity implements
-        LoaderManager.LoaderCallbacks<String> {
+public class Activity extends AppCompatActivity {
+	// 1. Create a static final key to store the query
+    /* A constant to save and restore the URL that is being displayed */
+    private static final String SEARCH_QUERY_EXTRA = "query";
+
+    // 2. Create a static final key to store the search's raw JSON
+    /* A constant to save and restore the JSON that is being displayed */
+    private static final String SEARCH_RESULTS_RAW_JSON = "results";
 	
 	private EditText mEditText;
 	private TextView mTextView;
 	private TextView mErrorMessageDisplay;
 	private ProgressBar mLoadingIndicator;
 	
-	// 2. Create a constant int to uniquely identify your loader.
-    /*
-     * This number will uniquely identify our Loader and is chosen arbitrarily. You can change this
-     * to any number you like, as long as you use the same variable name.
-     */
-    private static final int MY_LOADER = 77;
-	
 	private class onCreate() {
-		
 		mEditText = (EditText) findViewById(R.id.editText);
 		mTextView = (TextView) findViewById(R.id.textView);
 		mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
 		mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 		
+		// 9. If the savedInstanceState bundle is not null, set the text of the URL and search results TextView respectively
+        if (savedInstanceState != null) {
+            String query = savedInstanceState.getString(SEARCH_QUERY_EXTRA);
+            String rawJsonSearchResults = savedInstanceState.getString(SEARCH_RESULTS_RAW_JSON);
+
+            mEditText.setText(queryUrl);
+            mTextView.setText(rawJsonSearchResults);
+        }
+	}
+	
+	private void makeQuery() {
 		String query = mEditText.getText().toString();
-		URL url = NetworkUtils.builtUrl(query);
+		if (TextUtils.isEmpty(query)) {
+            return;
+        }
+		URL url = NetworkUtils.buildUrl(query);
 		
 		new NetworkingTask().execute(url);
 	}
@@ -343,54 +395,226 @@ public class Activity extends AppCompatActivity implements
 		mErrorMessageDisplay.setVisibility(View.VISIBLE);
 	}
 	
+
+	public class NetworkingTask extends AsyncTask<URL, Void, String> {
+		
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mLoadingIndicator.setVisibility.View.VISIBLE);
+		}
 	
-	// 3. Override onCreateLoader
+		@Overide
+		protected String doInBackground(URL... params) {
+			URL url = params[0];
+			String results = null;
+			try {
+				results = NetworkUtils.getResponseFromHttpUrl(url);
+			} catch (IOException e) {
+				e.printStackTrace;
+			}
+			return results;
+		}
+		
+		
+		@Override
+		protected void onPostExecute(String results) {
+			mLoadingIndicator.setVisibility(View.INVISIBLE);
+			
+			if (results != null && !results .equals("")) {
+				showData();
+				mTextView.setText(results);
+			} else {
+				showErrorMessage();
+			}
+		}
+		
+	}
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemThatWasClickedId = item.getItemId();
+        if (itemThatWasClickedId == R.id.action_search) {
+            makeQuery();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+	
+	// 3. Override onSaveInstanceState to persist data across Activity recreation
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // 4. Make sure super.onSaveInstanceState is called before doing anything else
+        super.onSaveInstanceState(outState);
+
+		// 5. Put the contents of the TextView that contains our search into a variable
+        String queryUrl = mEditText.getText().toString();
+		
+        // 6. Using the key for the query URL, put the string in the outState Bundle
+        outState.putString(SEARCH_QUERY_EXTRA, queryUrl);
+
+        // 7. Put the contents of the TextView that contains our search results into a variable
+        String rawJsonSearchResults = mSearchResultsTextView.getText().toString();
+
+        // 8. Using the key for the raw JSON search results, put the search results into the outState Bundle
+        outState.putString(SEARCH_RESULTS_RAW_JSON, rawJsonSearchResults);
+    }
+		
+}
+
+// Switch AsyncTask to AsyncTaskLoader
+
+// 1. Implement LoaderManager.LoaderCallbacks<String> on your activity
+public class Activity extends AppCompatActivity implements
+        LoaderManager.LoaderCallbacks<String> {
+			
+	// 2. Create a static final key to store the query's URL
+	private static final String SEARCH_QUERY_URL = "url";
+	
+    private static final String SEARCH_QUERY_EXTRA = "query";
+	
+	// 
+	private static final String SEARCH_RESULTS_RAW_JSON = "results";
+
+	
+	// 3. Create a constant int to uniquely identify your loader.
+    /*
+     * This number will uniquely identify our Loader and is chosen arbitrarily. You can change this
+     * to any number you like, as long as you use the same variable name.
+     */
+    private static final int MY_LOADER = 77;
+	private EditText mEditText;
+	private TextView mTextView;
+	private TextView mErrorMessageDisplay;
+	private ProgressBar mLoadingIndicator;
+
+	
+	private class onCreate() {
+		
+		mEditText = (EditText) findViewById(R.id.editText);
+		mTextView = (TextView) findViewById(R.id.textView);
+		mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
+		mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+
+        if (savedInstanceState != null) {
+            String query = savedInstanceState.getString(SEARCH_QUERY_EXTRA);
+            // 26. Remove the code that retrieves the JSON
+
+            mEditText.setText(queryUrl);
+            // 25. Remove the code that displays the JSON
+        }
+		
+		// 24. Initialize the loader with GITHUB_SEARCH_LOADER as the ID, null for the bundle, and this for the context
+        /*
+         * Initialize the loader
+         */
+        getSupportLoaderManager().initLoader(GITHUB_SEARCH_LOADER, null, this);
+		
+		
+	}
+	
+	private void makeQuery() {
+		String query = mEditText.getText().toString();
+		if (TextUtils.isEmpty(query)) {
+            return;
+        }
+		// 18. Remove the call to execute the AsyncTask
+		
+		 // 19. Create a bundle called queryBundle
+        Bundle queryBundle = new Bundle();
+		
+        // 20. Use putString with SEARCH_QUERY_URL_EXTRA as the key and the String value of the URL as the value
+        queryBundle.putString(SEARCH_QUERY_URL, url.toString());
+		
+		/*
+         * Now that we've created our bundle that we will pass to our Loader, we need to decide
+         * if we should restart the loader (if the loader already existed) or if we need to
+         * initialize the loader (if the loader did NOT already exist).
+         *
+         * We do this by first storing the support loader manager in the variable loaderManager.
+         * All things related to the Loader go through through the LoaderManager. Once we have a
+         * hold on the support loader manager, (loaderManager) we can attempt to access our
+         * searchLoader. To do this, we use LoaderManager's method, "getLoader", and pass in
+         * the ID we assigned in its creation. You can think of this process similar to finding a
+         * View by ID. We give the LoaderManager an ID and it returns a loader (if one exists). If
+         * one doesn't exist, we tell the LoaderManager to create one. If one does exist, we tell
+         * the LoaderManager to restart it.
+         */
+		 // 21. Call getSupportLoaderManager and store it in a LoaderManager variable
+         LoaderManager loaderManager = getSupportLoaderManager();
+         // 22. Get our Loader by calling getLoader and passing the ID we specified
+         Loader<String> searchLoader = loaderManager.getLoader(MY_LOADER);
+         // 23. If the Loader was null, initialize it. Else, restart it.
+         if (githubSearchLoader == null) {
+             loaderManager.initLoader(MY_LOADER, queryBundle, this);
+         } else {
+             loaderManager.restartLoader(MY_LOADER, queryBundle, this);
+         }
+	}
+	
+	private void showData() {
+		mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+		mTextView.setVisibility(View.VISIBLE);
+	}
+	
+	private void showErrorMessage() {
+		mTextView.setVisibility(View.INVISIBLE);
+		mErrorMessageDisplay.setVisibility(View.VISIBLE);
+	}
+	
+	
+	// 4. Override onCreateLoader
 	@Override
     public Loader<String> onCreateLoader(int id, final Bundle args) {
-        // 4. Return a new AsyncTaskLoader<String> as an anonymous inner class with this as the constructor's parameter
+        // 5. Return a new AsyncTaskLoader<String> as an anonymous inner class with this as the constructor's parameter
         return new AsyncTaskLoader<String>(this) {
 
-            // 5. Override onStartLoading
+            // 6. Override onStartLoading
             @Override
             protected void onStartLoading() {
 
-                // 6. If args is null, return.
+                // 7. If args is null, return.
                 /* If no arguments were passed, we don't have a query to perform. Simply return. */
                 if (args == null) {
                     return;
                 }
 
-                // 7. Show the loading indicator
+                // 8. Show the loading indicator
                 /*
                  * When we initially begin loading in the background, we want to display the
                  * loading indicator to the user
                  */
                 mLoadingIndicator.setVisibility(View.VISIBLE);
 
-                // 8. Force a load
+                // 9. Force a load
                 forceLoad();
             }
 
-            // 9. Override loadInBackground
+            // 10. Override loadInBackground
             @Override
             public String loadInBackground() {
 
-                // 10. Get the String for our URL from the bundle passed to onCreateLoader
+                // 11. Get the String for our URL from the bundle passed to onCreateLoader
                 /* Extract the search query from the args using our constant */
-                String searchQueryUrlString = args.getString(SEARCH_QUERY_URL_EXTRA);
+                String searchQueryUrlString = args.getString(SEARCH_QUERY_URL);
 
-                // 11. If the URL is null or empty, return null
+                // 12. If the URL is null or empty, return null
                 /* If the user didn't enter anything, there's nothing to search for */
                 if (searchQueryUrlString == null || TextUtils.isEmpty(searchQueryUrlString)) {
                     return null;
                 }
 
-                // 12. Copy the try / catch block from the AsyncTask's doInBackground method
+                // 13. Copy the try / catch block from the AsyncTask's doInBackground method
                 /* Parse the URL from the passed in String and perform the search */
                 try {
-                    URL githubUrl = new URL(searchQueryUrlString);
-                    String githubSearchResults = NetworkUtils.getResponseFromHttpUrl(githubUrl);
-                    return githubSearchResults;
+                    URL url = new URL(searchQueryUrlString);
+                    String result = NetworkUtils.getResponseFromHttpUrl(url);
+                    return result;
                 } catch (IOException e) {
                     e.printStackTrace();
                     return null;
@@ -399,15 +623,15 @@ public class Activity extends AppCompatActivity implements
         };
     }
 
-    // 13. Override onLoadFinished
+    // 14. Override onLoadFinished
     @Override
     public void onLoadFinished(Loader<String> loader, String data) {
 
-        // 14. Hide the loading indicator
+        // 15. Hide the loading indicator
         /* When we finish loading, we want to hide the loading indicator from the user. */
         mLoadingIndicator.setVisibility(View.INVISIBLE);
 
-        // COMPLETED (15) Use the same logic used in onPostExecute to show the data or the error message
+        // 16. Use the same logic used in onPostExecute to show the data or the error message
         /*
          * If the results are null, we assume an error has occurred. There are much more robust
          * methods for checking errors, but we wanted to keep this particular example simple.
@@ -420,7 +644,7 @@ public class Activity extends AppCompatActivity implements
         }
     }
 
-    // COMPLETED (16) Override onLoaderReset as it is part of the interface we implement, but don't do anything in this method
+    // 17. Override onLoaderReset as it is part of the interface we implement, but don't do anything in this method
     @Override
     public void onLoaderReset(Loader<String> loader) {
         /*
@@ -429,40 +653,33 @@ public class Activity extends AppCompatActivity implements
          */
     }
 	
-	public class NetworkingTask extends AsyncTask<URL, Void, String> {
-		
-		protected void onPreExecute() {
-			super.onPreExecute();
-			mLoadingIndicator.setVisibility.View.VISIBLE);
-		}
+	// 29. Delete the AsyncTask
 	
-		@Overide
-		protected String doInBackground(URL... params) {
-			URL url = params[0];
-			String results = null;
-			try {
-				results = NetworkUtils.getResponseFromHttpUrl(url);
-			} catch (IOException e) {
-				e.printStackTrace;
-			}
-			return results;
-		}
-		
-		
-		@Override
-		protected void onPostExecute(String results) {
-			
-			mLoadingIndicator.setVisibility(View.INVISIBLE);
-			
-			if (results != null && !results .equals("")) {
-				showData();
-				mTextView.setText(results);
-			} else {
-				showErrorMessage();
-			}
-		}
-		
-	}
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemThatWasClickedId = item.getItemId();
+        if (itemThatWasClickedId == R.id.action_search) {
+            makeQuery();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+	
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        String queryUrl = mEditText.getText().toString();
+        outState.putString(SEARCH_QUERY_EXTRA, queryUrl);
+
+		// 27. Remove the code that persists the JSON
+    }
 		
 }
 
