@@ -24,7 +24,7 @@ public class myDbHelper extends SQLiteOpenHelper {
 	
 	// Create a constructor that takes a context and calls the parent constructor
 	public dbHelper(Context context) {
-		super(context, DATABAS_NAME, null, DATABASE_VERSION);
+		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 	
 	// Override onCreate
@@ -32,7 +32,7 @@ public class myDbHelper extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase sqLiteDatabase) {
 		// Create an sql query string that will create the table
 		final String SQL_CREATE_TABLE = "CREATE TABLE " + myTable.TABLE_NAME + " (" +
-			myTable._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+			myTable._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 			myTable.COLUMN_NAME + " TEXT NOT NULL, " +
 			myTable.COLUMN_NUMBER + " INTEGER NOT NULL, " +
 			myTable.COLUMN_TIMESTAMP + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
@@ -76,12 +76,12 @@ public class TestUtil {
         cv.put(myContract.myTable.COLUMN_NUMBER, 12);
         list.add(cv);
 		
-		ContentValues cv = new ContentValues();
+		cv = new ContentValues();
         cv.put(myContract.myTable.COLUMN_NAME, "Sophie");
         cv.put(myContract.myTable.COLUMN_NUMBER, 42);
         list.add(cv);
 		
-		ContentValues cv = new ContentValues();
+		cv = new ContentValues();
         cv.put(myContract.myTable.COLUMN_NAME, "Larry");
         cv.put(myContract.myTable.COLUMN_NUMBER, 17);
         list.add(cv);
@@ -93,7 +93,7 @@ public class TestUtil {
             //clear the table first
             db.delete (myContract.myTable.TABLE_NAME,null,null);
             //go through the list and add one by one
-            for(ContentValues c:list){
+            for(ContentValues c : list){
                 db.insert(myContract.myTable.TABLE_NAME, null, c);
             }
             db.setTransactionSuccessful();
@@ -107,42 +107,6 @@ public class TestUtil {
         }
 	 }
 	
-}
-
-
-// First, make an xml layout for the data items you want to display
-class myListItem.xml { 
-	// Just a simple example
-	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="56dp"
-    android:gravity="center_vertical"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/tv_number"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_gravity="center"
-        android:background="@drawable/circle"
-        android:fontFamily="sans-serif"
-        android:gravity="center"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:text="@string/default_party_size"/>
-
-    <TextView
-        android:id="@+id/tv_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_weight="1"
-        android:fontFamily="sans-serif"
-        android:textSize="16sp"
-        android:text="@string/default_guest_name"/>
-
-
-</LinearLayout>
 }
 
 // Copied from RecyclerView notes and modified slightly
@@ -260,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
 			null,	// selection
 			null,	// slectionArgs
 			null,	// groupBy
+			null, 	// having
 			myContract.myTable.COLUMN_TIMESTAMP // order by
 		);
 	}
