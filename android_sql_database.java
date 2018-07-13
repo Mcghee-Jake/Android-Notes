@@ -36,7 +36,7 @@ public class myDbHelper extends SQLiteOpenHelper {
 			myTable.COLUMN_NAME + " TEXT NOT NULL, " +
 			myTable.COLUMN_NUMBER + " INTEGER NOT NULL, " +
 			myTable.COLUMN_TIMESTAMP + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-			"):";
+			")";
 			
 		// Execute the query
 		sqLiteDatabase.execSQL(SQL_CREATE_TABLE);
@@ -451,7 +451,7 @@ public class MainActivity extends AppCompatActivity {
 
 }
 
-// Next, lets add the ability to add new items to the database
+// Next, lets add the ability to delete items in the database
 public class myAdpater extends RecyclerView.Adapter<myAdapter.myViewHolder> {
 	
 	
